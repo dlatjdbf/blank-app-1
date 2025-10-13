@@ -1,19 +1,25 @@
 import streamlit as st
 import datetime
 import calendar
+import json
+import os
 
-# 한국 시간대 설정
+# ------------------- 기본 설정 -------------------
 KST = datetime.timezone(datetime.timedelta(hours=9))
 today = datetime.datetime.now(KST).date()
-
-# 페이지 설정
 st.set_page_config(page_title="카페인 달력", layout="centered")
 
-# 세션 상태 초기화
+# ------------------- 데이터 불러오기 -------------------
+DATA_FILE = "data.json"
+if os.path.exists(DATA_FILE):
+    with open(DATA_FILE, "r", encoding="utf-8") as f:
+        st.session_state.data = json.load(f)
+else:
+    st.session_state.data = {}
+
+# ------------------- 상태 초기화 -------------------
 if "page" not in st.session_state:
     st.session_state.page = "home"
-if "data" not in st.session_state:
-    st.session_state.data = {}
 if "intake_input" not in st.session_state:
     st.session_state.intake_input = 0
 if "selected_products" not in st.session_state:
@@ -52,7 +58,7 @@ elif st.session_state.page == "calendar":
             if st.button(label, key=f"btn_{key}"):
                 st.session_state.selected_date = key
                 st.session_state.intake_input = 0
-                st.session_state.selected_products = []  # 날짜 바뀔 때 초기화
+                st.session_state.selected_products = []
 
     # 날짜 클릭 시 입력창
     if "selected_date" in st.session_state:
@@ -75,11 +81,8 @@ elif st.session_state.page == "calendar":
             "핫식스 더킹 포스 355ml": 100
         }
 
-        # 제품 선택 UI
-        st.write("제품을 선택하세요.")
+        # 제품 선택 및 추가
         selected_product = st.selectbox("제품 선택", ["선택 안 함"] + list(products.keys()), key="product_select")
-
-        # 추가 버튼 (여러 번 가능)
         if selected_product != "선택 안 함":
             if st.button("선택한 제품 추가"):
                 caffeine_value = products[selected_product]
@@ -87,45 +90,8 @@ elif st.session_state.page == "calendar":
                 st.session_state.intake_input += caffeine_value
                 st.success(f"{selected_product} 추가됨 (+{caffeine_value}mg)")
 
-        # 현재까지 추가된 제품 목록
+        # 추가된 제품 목록 및 총 섭취량 자동 표시
         if st.session_state.selected_products:
             st.write("### 오늘 추가한 제품 목록")
             for name, mg in st.session_state.selected_products:
                 st.write(f"- {name}: {mg}mg")
-            st.info(f"총 섭취량: {st.session_state.intake_input}mg")
-
-        # 총 섭취량 입력칸 (자동 누적)
-        intake = st.number_input(
-            "총 섭취량 (mg)",
-            min_value=0,
-            value=int(st.session_state.intake_input),
-            step=10,
-            key="intake_display"
-        )
-
-        # 저장 / 취소 / 홈으로
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            if st.button("저장"):
-                achieved = intake <= goal
-                st.session_state.data[date] = {
-                    "goal": goal,
-                    "intake": intake,
-                    "achieved": achieved,
-                    "products": st.session_state.selected_products.copy()
-                }
-                del st.session_state.selected_date
-                st.success(f"{date} 기록이 저장되었습니다!")
-        with col2:
-            if st.button("취소"):
-                del st.session_state.selected_date
-        with col3:
-            if st.button("🏠 홈으로"):
-                st.session_state.page = "home"
-                if "selected_date" in st.session_state:
-                    del st.session_state.selected_date
-
-    # 홈으로 돌아가기 버튼
-    st.markdown("---")
-    if st.button("🏠 홈으로 돌아가기", use_container_width=True):
-        st.session_state.page = "home"
