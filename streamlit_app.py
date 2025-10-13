@@ -16,6 +16,8 @@ if "data" not in st.session_state:
     st.session_state.data = {}
 if "intake_input" not in st.session_state:
     st.session_state.intake_input = 0
+if "selected_products" not in st.session_state:
+    st.session_state.selected_products = []
 
 # ------------------- 첫 화면 -------------------
 if st.session_state.page == "home":
@@ -49,7 +51,8 @@ elif st.session_state.page == "calendar":
                 label += f"\n{entry['intake']}mg {'✅' if entry['achieved'] else '❌'}"
             if st.button(label, key=f"btn_{key}"):
                 st.session_state.selected_date = key
-                st.session_state.intake_input = 0  # 날짜 바꿀 때 초기화
+                st.session_state.intake_input = 0
+                st.session_state.selected_products = []  # 날짜 바뀔 때 초기화
 
     # 날짜 클릭 시 입력창
     if "selected_date" in st.session_state:
@@ -72,18 +75,26 @@ elif st.session_state.page == "calendar":
             "핫식스 더킹 포스 355ml": 100
         }
 
-        # 제품 선택
+        # 제품 선택 UI
         st.write("제품을 선택하세요.")
         selected_product = st.selectbox("제품 선택", ["선택 안 함"] + list(products.keys()), key="product_select")
 
-        # 추가 버튼
+        # 추가 버튼 (여러 번 가능)
         if selected_product != "선택 안 함":
             if st.button("선택한 제품 추가"):
                 caffeine_value = products[selected_product]
+                st.session_state.selected_products.append((selected_product, caffeine_value))
                 st.session_state.intake_input += caffeine_value
                 st.success(f"{selected_product} 추가됨 (+{caffeine_value}mg)")
 
-        # 총 섭취량 표시
+        # 현재까지 추가된 제품 목록
+        if st.session_state.selected_products:
+            st.write("### 오늘 추가한 제품 목록")
+            for name, mg in st.session_state.selected_products:
+                st.write(f"- {name}: {mg}mg")
+            st.info(f"총 섭취량: {st.session_state.intake_input}mg")
+
+        # 총 섭취량 입력칸 (자동 누적)
         intake = st.number_input(
             "총 섭취량 (mg)",
             min_value=0,
@@ -97,7 +108,12 @@ elif st.session_state.page == "calendar":
         with col1:
             if st.button("저장"):
                 achieved = intake <= goal
-                st.session_state.data[date] = {"goal": goal, "intake": intake, "achieved": achieved}
+                st.session_state.data[date] = {
+                    "goal": goal,
+                    "intake": intake,
+                    "achieved": achieved,
+                    "products": st.session_state.selected_products.copy()
+                }
                 del st.session_state.selected_date
                 st.success(f"{date} 기록이 저장되었습니다!")
         with col2:
