@@ -50,45 +50,10 @@ elif st.session_state.page == "calendar":
 
     # 날짜 클릭 시 입력창
     if "selected_date" in st.session_state:
-    # 제품 목록 (제품명: 카페인 함량)
-products = {
-    "몬스터 에너지 355ml": 100,
-    "레드불 에너지 드링크 355ml": 88.75,
-    "핫식스 더킹 파워 355ml": 100,
-    "핫식스 더킹 크러쉬피치 355ml": 100,
-    "핫식스 더킹 퍼플그레이프 355ml": 100,
-    "핫식스 더킹 제로 355ml": 100,
-    "핫식스 더킹 러쉬 355ml": 100,
-    "핫식스 더킹 포스 355ml": 100
-}
-    
         date = st.session_state.selected_date
         st.markdown("---")
         st.subheader(f"{date} 기록")
         goal = st.number_input("목표 섭취량 (mg)", min_value=0, step=10, key="goal_input"
-        # 제품 선택 기능
-st.write("제품을 선택하세요.")
-selected_product = st.selectbox("제품 선택", ["선택 안 함"] + list(products.keys()))
-
-# 추가 버튼: 선택된 제품의 카페인량을 총섭취량에 더함
-if "intake_input" not in st.session_state:
-    st.session_state.intake_input = 0
-
-if selected_product != "선택 안 함":
-    if st.button("선택한 제품 추가"):
-        caffeine_value = products[selected_product]
-        st.session_state.intake_input += caffeine_value
-        st.success(f"{selected_product} 추가됨 (+{caffeine_value}mg)")
-
-# 총섭취량 표시 (자동 누적 반영)
-intake = st.number_input(
-    "총 섭취량 (mg)",
-    min_value=0,
-    value=int(st.session_state.intake_input),
-    step=10,
-    key="intake_display"
-)
-                      )
         intake = st.number_input("총 섭취량 (mg)", min_value=0, step=10, key="intake_input")
 
         col1, col2, col3 = st.columns(3)
