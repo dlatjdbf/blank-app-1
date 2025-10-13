@@ -81,7 +81,7 @@ elif st.session_state.page == "calendar":
             "핫식스 더킹 포스 355ml": 100
         }
 
-        # 제품 선택 및 추가
+        # 제품 선택 및 자동 추가
         selected_product = st.selectbox("제품 선택", ["선택 안 함"] + list(products.keys()), key="product_select")
         if selected_product != "선택 안 함":
             if st.button("선택한 제품 추가"):
@@ -90,8 +90,48 @@ elif st.session_state.page == "calendar":
                 st.session_state.intake_input += caffeine_value
                 st.success(f"{selected_product} 추가됨 (+{caffeine_value}mg)")
 
-        # 추가된 제품 목록 및 총 섭취량 자동 표시
+        # ------------------- 수동 입력 추가 -------------------
+        st.markdown("---")
+        st.write("직접 mg 단위로 추가하기")
+        manual_value = st.number_input("직접 입력 (mg)", min_value=0, step=10, key="manual_add_value")
+        if st.button("직접 추가"):
+            if manual_value > 0:
+                st.session_state.selected_products.append((f"수동 입력 {manual_value}mg", manual_value))
+                st.session_state.intake_input += manual_value
+                st.success(f"수동 입력으로 +{manual_value}mg 추가됨")
+
+        # ------------------- 결과 표시 -------------------
         if st.session_state.selected_products:
-            st.write("### 오늘 추가한 제품 목록")
+            st.write("### 오늘 추가한 항목")
             for name, mg in st.session_state.selected_products:
                 st.write(f"- {name}: {mg}mg")
+            st.metric(label="총 섭취량", value=f"{st.session_state.intake_input} mg")
+
+        # 저장 / 취소 / 홈으로
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            if st.button("저장"):
+                achieved = st.session_state.intake_input <= goal
+                st.session_state.data[date] = {
+                    "goal": goal,
+                    "intake": st.session_state.intake_input,
+                    "achieved": achieved,
+                    "products": st.session_state.selected_products.copy()
+                }
+                with open(DATA_FILE, "w", encoding="utf-8") as f:
+                    json.dump(st.session_state.data, f, ensure_ascii=False, indent=2)
+                del st.session_state.selected_date
+                st.success(f"{date} 기록이 저장되었습니다!")
+        with col2:
+            if st.button("취소"):
+                del st.session_state.selected_date
+        with col3:
+            if st.button("🏠 홈으로"):
+                st.session_state.page = "home"
+                if "selected_date" in st.session_state:
+                    del st.session_state.selected_date
+
+    # 홈으로 돌아가기 버튼
+    st.markdown("---")
+    if st.button("🏠 홈으로 돌아가기", use_container_width=True):
+        st.session_state.page = "home"
