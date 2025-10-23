@@ -7,7 +7,7 @@ import os
 # ------------------- 기본 설정 -------------------
 KST = datetime.timezone(datetime.timedelta(hours=9))
 today = datetime.datetime.now(KST).date()
-st.set_page_config(page_title="카페인 달력", layout="centered")
+st.set_page_config(page_title="카페인 관리 앱", layout="centered")
 
 # ------------------- 데이터 불러오기 -------------------
 DATA_FILE = "data.json"
@@ -24,16 +24,27 @@ if "intake_input" not in st.session_state:
     st.session_state.intake_input = 0
 if "selected_products" not in st.session_state:
     st.session_state.selected_products = []
+if "selected_article" not in st.session_state:
+    st.session_state.selected_article = None
 
-# ------------------- 첫 화면 -------------------
+# ------------------- 아카이브 글 데이터 -------------------
+archive_articles = {
+    "카페인의 인체 작용과 부작용, 그리고 개인차와 청소년 주의사항": """(중략 — 이전에 작성한 내용 그대로)""",
+    "커피의 카페인 함량이 일정하지 않다고?": """(중략 — 이전에 작성한 내용 그대로)"""
+}
+
+# ------------------- 홈 화면 -------------------
 if st.session_state.page == "home":
     st.title("☕ 카페인 관리 앱")
     st.write("기능을 선택하세요.")
 
-    col1, col2, col3 = st.columns(3)
-    with col2:
-        if st.button("📅 카페인 달력 보기", use_container_width=True):
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("📅 카페인 달력", use_container_width=True):
             st.session_state.page = "calendar"
+    with col2:
+        if st.button("📚 카페인 아카이브", use_container_width=True):
+            st.session_state.page = "archive"
 
 # ------------------- 카페인 달력 -------------------
 elif st.session_state.page == "calendar":
@@ -131,7 +142,33 @@ elif st.session_state.page == "calendar":
                 if "selected_date" in st.session_state:
                     del st.session_state.selected_date
 
-    # 홈으로 돌아가기 버튼
     st.markdown("---")
     if st.button("🏠 홈으로 돌아가기", use_container_width=True):
         st.session_state.page = "home"
+
+# ------------------- 카페인 아카이브 -------------------
+elif st.session_state.page == "archive":
+    st.title("📚 카페인 아카이브")
+
+    # 본문이 선택되지 않았을 때 → 목록 화면
+    if st.session_state.selected_article is None:
+        st.write("카페인 관련 정보를 선택하세요:")
+        for title in archive_articles.keys():
+            if st.button(title, use_container_width=True):
+                st.session_state.selected_article = title
+                st.experimental_rerun()
+
+        st.markdown("---")
+        if st.button("🏠 홈으로 돌아가기", use_container_width=True):
+            st.session_state.page = "home"
+
+    # 본문이 선택된 상태 → 글 보기 화면
+    else:
+        title = st.session_state.selected_article
+        st.header(title)
+        st.markdown(archive_articles[title])
+        st.markdown("---")
+        if st.button("⬅ 목록으로 돌아가기"):
+            st.session_state.selected_article = None
+            st.experimental_rerun()
+
