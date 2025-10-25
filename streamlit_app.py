@@ -233,8 +233,8 @@ elif st.session_state.page == "timing":
     st.title("⏰ 카페인 섭취 시간대별 수면 영향 (400mg 기준)")
     st.write("""
 취침 예정 시간과 카페인 섭취 시간을 입력하면, 수면에 미치는 영향을 시각적으로 보여줍니다.  
-본 시각화는 **400mg(커피 약 4잔)** 섭취 기준이며,  
-연구에 따르면 **100mg(커피 1잔)은 취침 전 4시간까지 섭취해도 수면에 큰 영향을 미치지 않습니다.**
+본 시각화는 **400mg** 섭취 기준이며,  
+연구에 따르면 **100mg은 취침 전 4시간까지 섭취해도 수면에 큰 영향을 미치지 않습니다.**
 """)
     st.markdown("---")
 
@@ -287,8 +287,8 @@ elif st.session_state.page == "timing":
 
     st.caption("""
 ※ 근거: 400mg(고용량) 섭취 기준 — 취침 전 12시간 이내 섭취 시 수면 질 저하  
-100mg(일반 커피 1잔)은 취침 전 4시간까지 섭취해도 수면에 유의미한 영향이 없음  
-(출처: Australian Catholic University Sleep Study, 2023; Healthline, 2020)
+100mg은 취침 전 4시간까지 섭취해도 수면에 유의미한 영향이 없음  
+(출처: Dose and timing effects of caffeine on subsequent sleep: a randomized clinical crossover trial, 2024)
 """)
 
     st.markdown("---")
