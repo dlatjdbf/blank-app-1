@@ -330,3 +330,4 @@ elif st.session_state.page == "timing":
     st.markdown("---")
     if st.button("🏠 홈으로 돌아가기", use_container_width=True):
         st.session_state.page = "home"
+
